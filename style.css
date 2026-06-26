@@ -1,26 +1,29 @@
 /* ===== CSS Variables ===== */
 :root {
-  --primary:       #1a6b8a;
-  --primary-light: #2a90b8;
-  --primary-pale:  #e8f4f9;
-  --accent:        #e8a020;
-  --accent-pale:   #fef3e0;
-  --fitness:       #27ae60;
-  --fitness-light: #2ecc71;
-  --fitness-pale:  #eafaf1;
-  --danger:        #c0392b;
-  --danger-pale:   #fdf0f0;
-  --warning:       #e67e22;
-  --warning-pale:  #fef5ec;
-  --success:       #27ae60;
-  --bg:            #f0f4f8;
-  --card-bg:       #ffffff;
-  --border:        #d0dde8;
-  --text:          #1c2a35;
-  --muted:         #6b8090;
-  --radius:        12px;
-  --shadow:        0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg:     0 4px 20px rgba(0,0,0,0.12);
+  --primary:        #1a6b8a;
+  --primary-light:  #2a90b8;
+  --primary-pale:   #e8f4f9;
+  --accent:         #e8a020;
+  --accent-pale:    #fef3e0;
+  --fitness:        #27ae60;
+  --fitness-light:  #2ecc71;
+  --fitness-pale:   #eafaf1;
+  --purchase:       #8e44ad;
+  --purchase-light: #a56cc1;
+  --purchase-pale:  #f3e5f5;
+  --danger:         #c0392b;
+  --danger-pale:    #fdf0f0;
+  --warning:        #e67e22;
+  --warning-pale:   #fef5ec;
+  --success:        #27ae60;
+  --bg:             #f0f4f8;
+  --card-bg:        #ffffff;
+  --border:         #d0dde8;
+  --text:           #1c2a35;
+  --muted:          #6b8090;
+  --radius:         12px;
+  --shadow:         0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg:      0 4px 20px rgba(0,0,0,0.12);
 }
 
 /* ===== Reset & Base ===== */
@@ -100,6 +103,12 @@ body {
   color: #fff;
 }
 .btn-fitness:hover { background: var(--fitness-light); }
+
+.btn-purchase {
+  background: var(--purchase);
+  color: #fff;
+}
+.btn-purchase:hover { background: var(--purchase-light); }
 
 .btn-outline {
   background: transparent;
@@ -232,6 +241,11 @@ body {
   background: linear-gradient(135deg, #fff 60%, var(--fitness-pale));
 }
 
+.card-purchase {
+  border-right: 4px solid var(--purchase);
+  background: linear-gradient(135deg, #fff 60%, var(--purchase-pale));
+}
+
 .card-label {
   font-size: 13px;
   font-weight: 600;
@@ -348,6 +362,11 @@ body {
   animation: slideDown 0.2s ease;
 }
 
+.form-section-purchase {
+  border-color: var(--purchase-pale);
+}
+.form-section-purchase .form-header h3 { color: var(--purchase); }
+
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -389,7 +408,8 @@ body {
   color: var(--text);
 }
 
-.required { color: var(--danger); }
+.required   { color: var(--danger); }
+.field-hint { color: var(--muted); font-weight: 400; font-size: 11px; }
 
 .form-group input,
 .form-group select,
@@ -525,7 +545,8 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 .badge-site { background: var(--primary-pale); color: var(--primary); }
-.badge-fitness { background: var(--fitness-pale); color: var(--fitness); }
+.badge-fitness  { background: var(--fitness-pale);  color: var(--fitness); }
+.badge-purchase { background: var(--purchase-pale); color: var(--purchase); }
 
 .shoes-yes { color: var(--warning); font-weight: 700; }
 .shoes-no  { color: var(--muted); }

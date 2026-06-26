@@ -6,7 +6,6 @@
   <title>מעקב בריאות</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body>
 
@@ -25,6 +24,7 @@
     <button class="tab-btn active" data-tab="overview">סקירה כללית</button>
     <button class="tab-btn" data-tab="injections">זריקות</button>
     <button class="tab-btn" data-tab="fitness">כושר</button>
+    <button class="tab-btn" data-tab="purchases">רכישות</button>
     <button class="tab-btn" data-tab="insights">תובנות</button>
   </nav>
 
@@ -100,7 +100,7 @@
           <canvas id="chartWeight"></canvas>
         </div>
         <div class="chart-card">
-          <h3>חלוקת אתרי זריקה</h3>
+          <h3>חלוקת מיקומי זריקה</h3>
           <canvas id="chartSites"></canvas>
         </div>
         <div class="chart-card">
@@ -119,19 +119,19 @@
           <input type="hidden" id="injection-edit-id">
           <div class="form-row">
             <div class="form-group">
-              <label for="inj-hebrew-date">תאריך עברי</label>
-              <input type="text" id="inj-hebrew-date" dir="rtl" placeholder="כ' בסיוון">
+              <label for="inj-hebrew-date">תאריך עברי <span class="field-hint">(ראשי)</span></label>
+              <input type="text" id="inj-hebrew-date" dir="rtl" placeholder="כ' בסיוון תשפ&quot;ו">
             </div>
             <div class="form-group">
-              <label for="inj-gregorian-date">תאריך לועזי <span class="required">*</span></label>
-              <input type="date" id="inj-gregorian-date" required>
+              <label for="inj-gregorian-date">תאריך לועזי</label>
+              <input type="date" id="inj-gregorian-date">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="inj-site">אתר זריקה <span class="required">*</span></label>
+              <label for="inj-site">מיקום הזריקה <span class="required">*</span></label>
               <select id="inj-site" required>
-                <option value="">— בחר אתר —</option>
+                <option value="">— בחר מיקום —</option>
                 <option>רגל ימין</option>
                 <option>רגל שמאל</option>
                 <option>יד ימין</option>
@@ -139,8 +139,14 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="inj-dose">מינון (מ"ל)</label>
-              <input type="number" id="inj-dose" value="0.25" step="0.05" min="0.05">
+              <label for="inj-dose">מינון</label>
+              <select id="inj-dose">
+                <option value="0.25">0.25 מ"ג</option>
+                <option value="0.5">0.5 מ"ג</option>
+                <option value="1">1 מ"ג</option>
+                <option value="1.7">1.7 מ"ג</option>
+                <option value="2.4">2.4 מ"ג</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
@@ -176,7 +182,7 @@
             <tr>
               <th data-sort="hebrewDate">תאריך עברי</th>
               <th data-sort="gregorianDate">תאריך לועזי</th>
-              <th data-sort="site">אתר</th>
+              <th data-sort="site">מיקום</th>
               <th data-sort="dose">מינון</th>
               <th data-sort="weight">משקל</th>
               <th>נעליים</th>
@@ -280,7 +286,96 @@
 
     </section>
 
-    <!-- ====== TAB 4: תובנות ====== -->
+    <!-- ====== TAB 4: רכישות ====== -->
+    <section id="tab-purchases" class="tab-pane">
+
+      <div class="cards-grid cards-grid-3">
+        <div class="card card-purchase">
+          <div class="card-label">🛒 רכישה אחרונה</div>
+          <div class="card-value" id="pur-last-date">—</div>
+          <div class="card-sub" id="pur-last-store">—</div>
+        </div>
+        <div class="card card-purchase">
+          <div class="card-label">💰 סה"כ הוצאה</div>
+          <div class="card-value" id="pur-total-spent">—</div>
+          <div class="card-sub">לכל הרכישות</div>
+        </div>
+        <div class="card card-purchase">
+          <div class="card-label">📊 ממוצע לרכישה</div>
+          <div class="card-value" id="pur-avg">—</div>
+          <div class="card-sub">לרכישה בודדת</div>
+        </div>
+      </div>
+
+      <!-- Add/Edit Purchase Form -->
+      <div class="form-section form-section-purchase" id="purchase-form-section" style="display:none">
+        <div class="form-header">
+          <h3 id="purchase-form-title">הוספת רכישה</h3>
+          <button class="btn-close" id="btn-close-purchase-form">✕</button>
+        </div>
+        <form id="purchase-form" class="data-form">
+          <input type="hidden" id="pur-edit-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pur-hebrew-date">תאריך עברי <span class="field-hint">(ראשי)</span></label>
+              <input type="text" id="pur-hebrew-date" dir="rtl" placeholder="י&quot;ז בסיוון תשפ&quot;ו">
+            </div>
+            <div class="form-group">
+              <label for="pur-gregorian-date">תאריך לועזי</label>
+              <input type="date" id="pur-gregorian-date">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pur-store">שם חנות / בית מרקחת</label>
+              <input type="text" id="pur-store" placeholder="סופר פארם...">
+            </div>
+            <div class="form-group">
+              <label for="pur-amount">סכום (₪) <span class="required">*</span></label>
+              <input type="number" id="pur-amount" step="0.01" min="0" placeholder="676.69" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pur-payment">אמצעי תשלום</label>
+              <input type="text" id="pur-payment" placeholder="Google Pay MC / ויזה / מזומן...">
+            </div>
+            <div class="form-group">
+              <label for="pur-notes">הערות</label>
+              <input type="text" id="pur-notes" placeholder="הערות נוספות...">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="btn-cancel-purchase">ביטול</button>
+            <button type="submit" class="btn btn-purchase">שמור</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-header">
+        <h3>יומן רכישות</h3>
+        <button class="btn btn-purchase btn-sm" id="btn-add-purchase">+ הוסף רכישה</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="purchases-table">
+          <thead>
+            <tr>
+              <th data-sort="hebrewDate">תאריך עברי</th>
+              <th data-sort="gregorianDate">תאריך לועזי</th>
+              <th data-sort="store">חנות</th>
+              <th data-sort="amount">סכום</th>
+              <th data-sort="paymentMethod">אמצעי תשלום</th>
+              <th>הערות</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="purchases-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ====== TAB 5: תובנות ====== -->
     <section id="tab-insights" class="tab-pane">
 
       <div class="insights-grid">
