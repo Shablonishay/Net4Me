@@ -439,7 +439,7 @@ function renderOverviewDashboard(records, exercises) {
   const nextSite = getNextSite(records);
   const nextDate = getNextExpectedDate(records);
   document.getElementById('next-site').textContent = nextSite;
-  document.getElementById('next-date').textContent = nextDate ? 'צפוי: ' + fmtDate(nextDate) : '—';
+  document.getElementById('next-date').textContent = nextDate ? 'צפוי: ' + autoFillHebrewDate(nextDate) : '—';
 
   if (wRec.length) {
     const cur = wRec[wRec.length - 1].weight;
@@ -486,13 +486,13 @@ function renderInjectionsDashboard(records) {
   const nextSite = getNextSite(records);
   const nextDate = getNextExpectedDate(records);
   document.getElementById('inj-next-site').textContent = nextSite;
-  document.getElementById('inj-next-date').textContent = nextDate ? 'צפוי: ' + fmtDate(nextDate) : '—';
+  document.getElementById('inj-next-date').textContent = nextDate ? 'צפוי: ' + autoFillHebrewDate(nextDate) : '—';
   document.getElementById('inj-total').textContent     = records.length;
-  document.getElementById('inj-since').textContent     = sorted.length ? 'מאז ' + fmtDate(sorted[0].gregorianDate) : '—';
+  document.getElementById('inj-since').textContent     = sorted.length ? 'מאז ' + autoFillHebrewDate(sorted[0].gregorianDate) : '—';
   if (sorted.length) {
     const last = sorted[sorted.length - 1];
     document.getElementById('inj-last-site').textContent = last.site;
-    document.getElementById('inj-last-date').textContent = (last.hebrewDate ? last.hebrewDate + ' / ' : '') + fmtDate(last.gregorianDate);
+    document.getElementById('inj-last-date').textContent = last.hebrewDate || autoFillHebrewDate(last.gregorianDate);
   }
   document.getElementById('inj-consistency').textContent = getConsistency(records);
 }
@@ -579,14 +579,17 @@ function renderOverviewChart(records, exercises) {
           order: 1,
         },
         {
-          type: 'scatter',
+          type: 'line',
           label: 'יום כושר 🏃',
-          data: markers.map((y, i) => y !== null ? { x: allDates[i], y } : null).filter(Boolean),
+          data: markers,
           pointStyle: 'triangle',
-          pointRadius: 10,
+          pointRadius: allDates.map(d => exDates.has(d) ? 10 : 0),
+          pointHoverRadius: allDates.map(d => exDates.has(d) ? 12 : 0),
           backgroundColor: 'rgba(39,174,96,0.85)',
-          borderColor: '#27ae60',
+          borderColor: 'transparent',
           borderWidth: 0,
+          showLine: false,
+          spanGaps: false,
           order: 0,
         }
       ],
@@ -599,9 +602,9 @@ function renderOverviewChart(records, exercises) {
           rtl: true,
           callbacks: {
             title: items => {
-              const iso = items[0].label || (items[0].raw && items[0].raw.x);
+              const iso = items[0].label;
               const rec = weightByDate[iso];
-              return (rec && rec.hebrewDate ? rec.hebrewDate + ' / ' : '') + fmtDate(iso);
+              return (rec && rec.hebrewDate) ? rec.hebrewDate : autoFillHebrewDate(iso);
             },
             label: item => {
               if (item.datasetIndex === 1) return '🏃 יום כושר';
@@ -651,7 +654,7 @@ function renderWeightChart(records) {
           callbacks: {
             title: items => {
               const r = wRec.find(x => x.gregorianDate === items[0].label);
-              return (r && r.hebrewDate ? r.hebrewDate + ' / ' : '') + fmtDate(items[0].label);
+              return r && r.hebrewDate ? r.hebrewDate : autoFillHebrewDate(items[0].label);
             },
             label: item => `${item.parsed.y} ק"ג${wRec[item.dataIndex].weightWithShoes ? ' (עם נעליים)' : ''}`,
           }
@@ -776,8 +779,8 @@ function renderInjectionsTable(records) {
   }
   tbody.innerHTML = sorted.map(r => `
     <tr>
-      <td>${r.hebrewDate || '—'}</td>
-      <td>${fmtDate(r.gregorianDate)}</td>
+      <td>${r.hebrewDate || autoFillHebrewDate(r.gregorianDate)}</td>
+      <td class="text-muted" style="font-size:12px">${r.gregorianDate || '—'}</td>
       <td><span class="badge badge-site">${r.site}</span></td>
       <td>${r.dose} מ"ג</td>
       <td>${r.weight ? r.weight + ' ק"ג' : '—'}</td>
@@ -800,7 +803,7 @@ function renderExercisesTable(exercises) {
   }
   tbody.innerHTML = sorted.map(e => `
     <tr>
-      <td>${fmtDate(e.date)}</td>
+      <td>${autoFillHebrewDate(e.date)}<br><small class="text-muted">${e.date}</small></td>
       <td><span class="badge badge-fitness">${e.type}</span></td>
       <td>${e.durationMin ? e.durationMin + ' דקות' : '—'}</td>
       <td class="text-muted">${e.notes || '—'}</td>
@@ -817,13 +820,12 @@ function renderPurchasesTable(purchases) {
   const tbody  = document.getElementById('purchases-tbody');
   if (!tbody) return;
   if (!purchases.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>אין רשומות רכישה עדיין</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>אין רשומות רכישה עדיין</p></div></td></tr>';
     return;
   }
   tbody.innerHTML = sorted.map(p => `
     <tr>
-      <td>${p.hebrewDate || '—'}</td>
-      <td>${fmtDate(p.gregorianDate)}</td>
+      <td>${p.hebrewDate || autoFillHebrewDate(p.gregorianDate)}<br><small class="text-muted">${p.gregorianDate || ''}</small></td>
       <td>${p.store || '—'}</td>
       <td class="fw-bold">₪${(p.amount || 0).toFixed(2)}</td>
       <td class="text-muted">${p.paymentMethod || '—'}</td>
@@ -867,8 +869,8 @@ function renderRateInsights(records) {
     <div class="rate-row"><span class="rate-label">תקופת מעקב</span><span class="rate-value">${rate.weeks.toFixed(1)} שבועות</span></div>
     <div class="rate-row"><span class="rate-label">קצב שבועי ממוצע</span><span class="rate-value ${cls}">${rate.rate.toFixed(2)} ק"ג/שבוע ${lbl}</span></div>
     <div class="rate-row"><span class="rate-label">קצב חודשי</span><span class="rate-value">${(rate.rate*4.33).toFixed(1)} ק"ג/חודש</span></div>
-    <div class="rate-row"><span class="rate-label">משקל פתיחה</span><span class="rate-value">${rate.firstWeight} ק"ג (${fmtDate(rate.firstDate)})</span></div>
-    <div class="rate-row"><span class="rate-label">משקל נוכחי</span><span class="rate-value">${rate.lastWeight} ק"ג</span></div>`;
+    <div class="rate-row"><span class="rate-label">משקל פתיחה</span><span class="rate-value">${rate.firstWeight} ק"ג (${autoFillHebrewDate(rate.firstDate)})</span></div>
+    <div class="rate-row"><span class="rate-label">משקל נוכחי</span><span class="rate-value">${rate.lastWeight} ק"ג (${autoFillHebrewDate(rate.lastDate)})</span></div>`;
 }
 
 function renderBMIGoals(records) {
