@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מעקב בריאות</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <h1 class="site-title">💉 מעקב בריאות</h1>
+      <div class="header-actions">
+        <button class="btn btn-outline" id="btn-export">⬇ ייצוא JSON</button>
+        <button class="btn btn-fitness" id="btn-add-exercise">+ כושר</button>
+        <button class="btn btn-primary" id="btn-add-injection">+ זריקה</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn active" data-tab="overview">סקירה כללית</button>
+    <button class="tab-btn" data-tab="injections">זריקות</button>
+    <button class="tab-btn" data-tab="fitness">כושר</button>
+    <button class="tab-btn" data-tab="insights">תובנות</button>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ====== TAB 1: סקירה כללית ====== -->
+    <section id="tab-overview" class="tab-pane active">
+
+      <div class="cards-grid">
+        <div class="card card-accent" id="card-next-injection">
+          <div class="card-label">💉 הזריקה הבאה</div>
+          <div class="card-value" id="next-site">—</div>
+          <div class="card-sub" id="next-date">—</div>
+        </div>
+        <div class="card" id="card-bmi">
+          <div class="card-label">📊 BMI נוכחי</div>
+          <div class="card-value" id="bmi-value">—</div>
+          <div class="card-sub" id="bmi-category">—</div>
+        </div>
+        <div class="card" id="card-weight-trend">
+          <div class="card-label">⚖️ מגמת משקל</div>
+          <div class="card-value" id="current-weight">—</div>
+          <div class="card-sub" id="weight-delta">—</div>
+        </div>
+        <div class="card card-fitness" id="card-fitness-week">
+          <div class="card-label">🏃 כושר השבוע</div>
+          <div class="card-value" id="fitness-week-count">—</div>
+          <div class="card-sub" id="fitness-week-min">—</div>
+        </div>
+      </div>
+
+      <div class="recommendations-panel" id="recommendations-panel">
+        <h3 class="panel-title">🎯 המלצות כושר אישיות</h3>
+        <div id="recommendations-list" class="recs-grid"></div>
+      </div>
+
+      <div class="chart-card chart-full">
+        <h3>משקל לאורך זמן + ימי כושר</h3>
+        <canvas id="chartOverview" height="100"></canvas>
+      </div>
+
+    </section>
+
+    <!-- ====== TAB 2: זריקות ====== -->
+    <section id="tab-injections" class="tab-pane">
+
+      <div class="cards-grid">
+        <div class="card card-accent">
+          <div class="card-label">💉 הזריקה הבאה</div>
+          <div class="card-value" id="inj-next-site">—</div>
+          <div class="card-sub" id="inj-next-date">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">📋 סה"כ זריקות</div>
+          <div class="card-value" id="inj-total">—</div>
+          <div class="card-sub" id="inj-since">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">🕐 זריקה אחרונה</div>
+          <div class="card-value" id="inj-last-site">—</div>
+          <div class="card-sub" id="inj-last-date">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">✅ עקביות</div>
+          <div class="card-value" id="inj-consistency">—</div>
+          <div class="card-sub">מהשבועות עם זריקה</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>משקל לאורך זמן</h3>
+          <canvas id="chartWeight"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>חלוקת אתרי זריקה</h3>
+          <canvas id="chartSites"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>מגמת משקל (ממוצע נע)</h3>
+          <canvas id="chartTrend"></canvas>
+        </div>
+      </div>
+
+      <!-- Add/Edit Injection Form -->
+      <div class="form-section" id="injection-form-section" style="display:none">
+        <div class="form-header">
+          <h3 id="injection-form-title">הוספת זריקה</h3>
+          <button class="btn-close" id="btn-close-injection-form">✕</button>
+        </div>
+        <form id="injection-form" class="data-form">
+          <input type="hidden" id="injection-edit-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inj-hebrew-date">תאריך עברי</label>
+              <input type="text" id="inj-hebrew-date" dir="rtl" placeholder="כ' בסיוון">
+            </div>
+            <div class="form-group">
+              <label for="inj-gregorian-date">תאריך לועזי <span class="required">*</span></label>
+              <input type="date" id="inj-gregorian-date" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inj-site">אתר זריקה <span class="required">*</span></label>
+              <select id="inj-site" required>
+                <option value="">— בחר אתר —</option>
+                <option>רגל ימין</option>
+                <option>רגל שמאל</option>
+                <option>יד ימין</option>
+                <option>יד שמאל</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="inj-dose">מינון (מ"ל)</label>
+              <input type="number" id="inj-dose" value="0.25" step="0.05" min="0.05">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inj-weight">משקל (ק"ג)</label>
+              <input type="number" id="inj-weight" step="0.1" min="30" max="300" placeholder="141.5">
+            </div>
+            <div class="form-group form-group-checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="inj-shoes">
+                <span>נמדד עם נעליים</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inj-notes">הערות</label>
+            <textarea id="inj-notes" rows="2" placeholder="הערות נוספות..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="btn-cancel-injection">ביטול</button>
+            <button type="submit" class="btn btn-primary">שמור</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-header">
+        <h3>כל הרשומות</h3>
+        <button class="btn btn-primary btn-sm" id="btn-add-injection-2">+ הוסף זריקה</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="injections-table">
+          <thead>
+            <tr>
+              <th data-sort="hebrewDate">תאריך עברי</th>
+              <th data-sort="gregorianDate">תאריך לועזי</th>
+              <th data-sort="site">אתר</th>
+              <th data-sort="dose">מינון</th>
+              <th data-sort="weight">משקל</th>
+              <th>נעליים</th>
+              <th>הערות</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="injections-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ====== TAB 3: כושר ====== -->
+    <section id="tab-fitness" class="tab-pane">
+
+      <div class="cards-grid cards-grid-3">
+        <div class="card card-fitness">
+          <div class="card-label">📅 ימי כושר החודש</div>
+          <div class="card-value" id="fit-month-days">—</div>
+          <div class="card-sub" id="fit-month-label">—</div>
+        </div>
+        <div class="card card-fitness">
+          <div class="card-label">⏱ סך דקות החודש</div>
+          <div class="card-value" id="fit-month-min">—</div>
+          <div class="card-sub">דקות</div>
+        </div>
+        <div class="card card-fitness">
+          <div class="card-label">🏆 פעילות נפוצה</div>
+          <div class="card-value" id="fit-top-activity">—</div>
+          <div class="card-sub" id="fit-top-count">—</div>
+        </div>
+      </div>
+
+      <!-- Add/Edit Exercise Form -->
+      <div class="form-section" id="exercise-form-section" style="display:none">
+        <div class="form-header">
+          <h3 id="exercise-form-title">הוספת אימון</h3>
+          <button class="btn-close" id="btn-close-exercise-form">✕</button>
+        </div>
+        <form id="exercise-form" class="data-form">
+          <input type="hidden" id="exercise-edit-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ex-date">תאריך <span class="required">*</span></label>
+              <input type="date" id="ex-date" required>
+            </div>
+            <div class="form-group">
+              <label for="ex-type">סוג פעילות <span class="required">*</span></label>
+              <select id="ex-type" required>
+                <option value="">— בחר פעילות —</option>
+                <option>הליכה</option>
+                <option>שחייה</option>
+                <option>אופניים</option>
+                <option>חדר כושר</option>
+                <option>יוגה / פילאטיס</option>
+                <option>אחר</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ex-duration">משך (דקות)</label>
+              <input type="number" id="ex-duration" min="5" max="480" placeholder="45">
+            </div>
+            <div class="form-group">
+              <label for="ex-notes">הערות</label>
+              <input type="text" id="ex-notes" placeholder="הליכה 3 ק&quot;מ בפארק">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="btn-cancel-exercise">ביטול</button>
+            <button type="submit" class="btn btn-fitness">שמור</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="chart-card">
+        <h3>תדירות כושר לאורך זמן</h3>
+        <canvas id="chartFitnessFreq" height="100"></canvas>
+      </div>
+
+      <div class="table-header">
+        <h3>יומן אימונים</h3>
+        <button class="btn btn-fitness btn-sm" id="btn-add-exercise-2">+ הוסף אימון</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="exercises-table">
+          <thead>
+            <tr>
+              <th data-sort="date">תאריך</th>
+              <th data-sort="type">פעילות</th>
+              <th data-sort="durationMin">משך (דקות)</th>
+              <th>הערות</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody id="exercises-tbody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- ====== TAB 4: תובנות ====== -->
+    <section id="tab-insights" class="tab-pane">
+
+      <div class="insights-grid">
+
+        <div class="card insight-card">
+          <h3>📉 קצב ירידת משקל</h3>
+          <div id="insights-rate" class="insights-content"></div>
+        </div>
+
+        <div class="card insight-card">
+          <h3>🎯 יעדי BMI</h3>
+          <div id="insights-bmi-goals" class="insights-content"></div>
+        </div>
+
+        <div class="card insight-card chart-full">
+          <h3>🏃 קורלציה: כושר × ירידת משקל</h3>
+          <div id="insights-correlation" class="insights-content"></div>
+          <canvas id="chartCorrelation" height="120" style="display:none"></canvas>
+        </div>
+
+        <div class="card insight-card chart-full">
+          <h3>💡 המלצות אישיות מפורטות</h3>
+          <div id="insights-recommendations" class="insights-content"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Delete confirmation modal -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <p id="modal-text">האם למחוק רשומה זו?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="modal-cancel">ביטול</button>
+        <button class="btn btn-danger" id="modal-confirm">מחק</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
