@@ -638,6 +638,7 @@ function renderOverviewChart(records, exercises) {
           }
         },
         y: {
+          position: 'right',
           ticks: { callback: v => v <= markerY ? '🏃' : v + ' ק"ג' },
           min: markerY - 0.5,
           max: Math.ceil(Math.max(...wRec.map(r => r.weight)) + 1),
@@ -685,6 +686,7 @@ function renderWeightChart(records) {
       scales: {
         x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: {
+          position: 'right',
           ticks: { callback: v => v + ' ק"ג' },
           min: Math.floor(Math.min(...wRec.map(r=>r.weight)) - 2),
         }
@@ -743,7 +745,7 @@ function renderTrendChart(records) {
       },
       scales: {
         x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
-        y: { ticks: { callback: v => v + ' ק"ג' } }
+        y: { position: 'right', ticks: { callback: v => v + ' ק"ג' } }
       }
     }
   });
