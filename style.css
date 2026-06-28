@@ -783,3 +783,40 @@ tbody tr:last-child td { border-bottom: none; }
 .text-warning { color: var(--warning); }
 .fw-bold { font-weight: 700; }
 .mt-4 { margin-top: 16px; }
+
+/* ===== Auth Overlay ===== */
+#auth-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  align-items: center; justify-content: center;
+}
+#auth-box {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  text-align: center;
+  display: flex; flex-direction: column; gap: 1rem;
+  min-width: 280px;
+}
+#auth-title { font-size: 1.3rem; font-weight: 700; color: var(--primary); }
+#auth-input {
+  padding: 0.7rem 1rem; font-size: 1rem;
+  border: 2px solid var(--border); border-radius: 8px;
+  outline: none; text-align: right; font-family: inherit;
+}
+#auth-input:focus { border-color: var(--primary); }
+#auth-btn {
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 0.7rem; font-size: 1rem; cursor: pointer;
+  font-family: inherit;
+}
+#auth-btn:hover { background: var(--primary-light); }
+#auth-error { color: var(--danger); font-size: 0.9rem; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)}
+}
+.shake { animation: shake 0.4s ease; }

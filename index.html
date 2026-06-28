@@ -4,10 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>מעקב בריאות</title>
+  <link rel="icon" href="pavicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
+
+  <div id="auth-overlay">
+    <div id="auth-box">
+      <div id="auth-title">🔒 נדרשת סיסמה</div>
+      <input id="auth-input" type="password" placeholder="הקלד סיסמה..." autofocus dir="rtl">
+      <button id="auth-btn">כניסה</button>
+      <div id="auth-error" style="display:none">סיסמה שגויה</div>
+    </div>
+  </div>
 
   <header class="site-header">
     <div class="header-inner">
@@ -417,6 +427,32 @@
     </div>
   </div>
 
+  <script>
+  (function(){
+    if(sessionStorage.getItem('auth')==='1'){return;}
+    var overlay=document.getElementById('auth-overlay');
+    overlay.style.display='flex';
+    document.querySelector('header').style.display='none';
+    document.querySelector('nav').style.display='none';
+    document.querySelector('main').style.display='none';
+    function check(){
+      if(document.getElementById('auth-input').value==='דיאליזה'){
+        sessionStorage.setItem('auth','1');
+        overlay.style.display='none';
+        document.querySelector('header').style.display='';
+        document.querySelector('nav').style.display='';
+        document.querySelector('main').style.display='';
+      } else {
+        var box=document.getElementById('auth-box');
+        box.classList.add('shake');
+        document.getElementById('auth-error').style.display='block';
+        setTimeout(function(){box.classList.remove('shake');},500);
+      }
+    }
+    document.getElementById('auth-btn').onclick=check;
+    document.getElementById('auth-input').addEventListener('keydown',function(e){if(e.key==='Enter')check();});
+  })();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
