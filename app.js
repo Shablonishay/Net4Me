@@ -568,7 +568,7 @@ function renderOverviewChart(records, exercises) {
   const exDates = new Set(exercises.map(e => e.date));
 
   // Combined sorted labels (injection dates + exercise dates)
-  const allDates = [...new Set([...wRec.map(r => r.gregorianDate), ...exDates])].sort();
+  const allDates = [...new Set([...wRec.map(r => r.gregorianDate), ...exDates])].sort().reverse();
 
   const weights = allDates.map(d => weightByDate[d] ? weightByDate[d].weight : null);
   const minW    = Math.min(...wRec.map(r => r.weight));
