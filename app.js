@@ -120,13 +120,17 @@ function hebrewYearDays(y) { return hebrewElapsedDays(y + 1) - hebrewElapsedDays
 
 function hebrewMonthDays(y, m) {
   const leap = isHebrewLeapYear(y);
-  const months = leap ? 13 : 12;
-  const base = [30,29,30,29,30,29,30,29,30,29,30,29,30];
-  if (m === 8 && hebrewYearDays(y) % 10 !== 5) return 29;
-  if (m === 9 && hebrewYearDays(y) % 10 === 3) return 30;
-  if (m === 6 && !leap) return 0;
-  if (m > months) return 0;
-  return base[m - 1];
+  const maxMonths = leap ? 13 : 12;
+  if (m < 1 || m > maxMonths) return 0;
+  // חשוון (2) וכסלו (3) — אורכם משתנה לפי סוג השנה
+  if (m === 2) return hebrewYearDays(y) % 10 === 5 ? 30 : 29;
+  if (m === 3) return hebrewYearDays(y) % 10 === 3 ? 29 : 30;
+  // שאר החודשים — אורך קבוע (סידור תשרי=1)
+  // רגיל: תשרי(30) חשוון כסלו טבת(29) שבט(30) אדר(29) ניסן(30) אייר(29) סיוון(30) תמוז(29) אב(30) אלול(29)
+  // מעובר: תשרי(30) חשוון כסלו טבת(29) שבט(30) אדרא(30) אדרב(29) ניסן(30) אייר(29) סיוון(30) תמוז(29) אב(30) אלול(29)
+  const FIXED_NL = [30, 0, 0, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+  const FIXED_L  = [30, 0, 0, 29, 30, 30, 29, 30, 29, 30, 29, 30, 29];
+  return (leap ? FIXED_L : FIXED_NL)[m - 1];
 }
 
 function accumulatedDays(year, month) {
