@@ -159,9 +159,9 @@ function jdToGregorian(jd) {
 
 function jdToHebrew(jd) {
   const jd0 = Math.floor(jd) + 0.5;
-  let year = Math.floor((jd0 - 347997) / 365.25);
-  while (hebrewElapsedDays(year + 1) <= jd0 - 347996) year++;
-  const yearStart = hebrewElapsedDays(year) + 347996;
+  let year = Math.floor((jd0 - 347999) / 365.25);
+  while (hebrewElapsedDays(year + 1) <= jd0 - 347998) year++;
+  const yearStart = hebrewElapsedDays(year) + 347998;
   let month = 1;
   const numMonths = hebrewMonthsInYear(year);
   while (month <= numMonths) {
@@ -183,6 +183,18 @@ function formatHebrewDate(h) {
   const months = leap ? HEB_MONTHS_LEAP : HEB_MONTHS;
   const monthName = months[h.month - 1] || '';
   return numToHebrew(h.day) + ' ב' + monthName + ' ' + yearToHebrew(h.year);
+}
+
+// Short Hebrew date for chart axis labels: "כ' סיוון" (no year)
+function hebrewDateShort(isoStr) {
+  if (!isoStr) return '';
+  try {
+    const [y, m, d] = isoStr.split('-').map(Number);
+    const h = gregorianToHebrew(y, m, d);
+    const leap = isHebrewLeapYear(h.year);
+    const months = leap ? HEB_MONTHS_LEAP : HEB_MONTHS;
+    return numToHebrew(h.day) + ' ' + months[h.month - 1];
+  } catch (e) { return isoStr; }
 }
 
 // Gregorian ISO string → full Hebrew date string
@@ -223,7 +235,7 @@ function hebrewToGregorianISO(text) {
     if (!hebrewDay || !hebrewYear || hebrewYear < 5700 || hebrewYear > 6000) return null;
 
     // Hebrew date → JD → Gregorian
-    const jd = hebrewElapsedDays(hebrewYear) + 347996 + accumulatedDays(hebrewYear, hebrewMonth) + hebrewDay - 1;
+    const jd = hebrewElapsedDays(hebrewYear) + 347998 + accumulatedDays(hebrewYear, hebrewMonth) + hebrewDay - 1;
     const g  = jdToGregorian(jd);
     return `${g.year}-${String(g.month).padStart(2,'0')}-${String(g.day).padStart(2,'0')}`;
   } catch (e) { return null; }
@@ -614,7 +626,13 @@ function renderOverviewChart(records, exercises) {
         },
       },
       scales: {
-        x: { ticks: { maxRotation: 45, font: { size: 11 } } },
+        x: {
+          ticks: {
+            maxRotation: 45,
+            font: { size: 11 },
+            callback: (val, idx) => hebrewDateShort(allDates[idx]),
+          }
+        },
         y: {
           ticks: { callback: v => v <= markerY ? '🏃' : v + ' ק"ג' },
           min: markerY - 0.5,
@@ -661,6 +679,7 @@ function renderWeightChart(records) {
         }
       },
       scales: {
+        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: {
           ticks: { callback: v => v + ' ק"ג' },
           min: Math.floor(Math.min(...wRec.map(r=>r.weight)) - 2),
@@ -709,8 +728,19 @@ function renderTrendChart(records) {
     },
     options: {
       responsive: true,
-      plugins: { legend: { rtl: true, position: 'top' }, tooltip: { rtl: true } },
-      scales: { y: { ticks: { callback: v => v + ' ק"ג' } } }
+      plugins: {
+        legend: { rtl: true, position: 'top' },
+        tooltip: {
+          rtl: true,
+          callbacks: {
+            title: items => hebrewDateShort(wRec[items[0].dataIndex].gregorianDate),
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
+        y: { ticks: { callback: v => v + ' ק"ג' } }
+      }
     }
   });
 }
@@ -725,7 +755,7 @@ function renderFitnessChart(exercises) {
   chartFitnessInst = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: weeks.map(fmtDate),
+      labels: weeks.map(hebrewDateShort),
       datasets: [{ label: 'אימונים בשבוע', data: weeks.map(w=>byWeek[w]), backgroundColor: 'rgba(39,174,96,0.7)', borderColor: '#27ae60', borderWidth: 1.5, borderRadius: 6 }]
     },
     options: {
