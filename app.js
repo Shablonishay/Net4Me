@@ -649,7 +649,7 @@ function renderOverviewChart(records, exercises) {
 
 function renderWeightChart(records) {
   chartWeightInst = destroyChart(chartWeightInst);
-  const wRec = sortedByDate(records.filter(r => r.weight));
+  const wRec = sortedByDate(records.filter(r => r.weight)).reverse();
   if (!wRec.length) return;
   const ctx = document.getElementById('chartWeight').getContext('2d');
   chartWeightInst = new Chart(ctx, {
@@ -683,7 +683,7 @@ function renderWeightChart(records) {
         }
       },
       scales: {
-        x: { reverse: true, ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
+        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: {
           ticks: { callback: v => v + ' ק"ג' },
           min: Math.floor(Math.min(...wRec.map(r=>r.weight)) - 2),
@@ -713,7 +713,7 @@ function renderSitesChart(records) {
 
 function renderTrendChart(records) {
   chartTrendInst = destroyChart(chartTrendInst);
-  const wRec = sortedByDate(records.filter(r => r.weight));
+  const wRec = sortedByDate(records.filter(r => r.weight)).reverse();
   if (wRec.length < 2) return;
   const weights = wRec.map(r => r.weight);
   const moving  = weights.map((_, i) => {
@@ -742,7 +742,7 @@ function renderTrendChart(records) {
         }
       },
       scales: {
-        x: { reverse: true, ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
+        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: { ticks: { callback: v => v + ' ק"ג' } }
       }
     }
