@@ -683,7 +683,7 @@ function renderWeightChart(records) {
         }
       },
       scales: {
-        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
+        x: { reverse: true, ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: {
           ticks: { callback: v => v + ' ק"ג' },
           min: Math.floor(Math.min(...wRec.map(r=>r.weight)) - 2),
@@ -742,7 +742,7 @@ function renderTrendChart(records) {
         }
       },
       scales: {
-        x: { ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
+        x: { reverse: true, ticks: { maxRotation: 45, font: { size: 11 }, callback: (val, idx) => hebrewDateShort(wRec[idx].gregorianDate) } },
         y: { ticks: { callback: v => v + ' ק"ג' } }
       }
     }
